@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Navigation</title>
+</head>
+<body>
+    <h1>Robot Navigation</h1>
+    <img id="map-image" src="data:image/png;base64,{{ map_image }}" alt="Map">
+    
+    <form id="navigate-form">
+        <label for="target">Enter target (x,y):</label>
+        <input type="text" id="target" name="target" placeholder="1,1">
+        <button type="submit">Navigate</button>
+    </form>
+
+    <script>
+        document.getElementById("navigate-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let target = document.getElementById("target").value.trim();
+
+            fetch("/navigate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ target: target })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                let images = data.map_images;
+                let index = 0;
+
+                function updateImage() {
+                    if (index < images.length) {
+                        document.getElementById("map-image").src = "data:image/png;base64," + images[index];
+                        index++;
+                        setTimeout(updateImage, 500);
+                    }
+                }
+
+                updateImage();
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    </script>
+</body>
+</html>
