@@ -4,17 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Robot Navigation</title>
+    <link rel="stylesheet" href="static/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <h1>Robot Navigation</h1>
-    <img id="map-image" src="data:image/png;base64,{{ map_image }}" alt="Map">
     
-    <form id="navigate-form">
-        <label for="target">Enter target (x,y):</label>
-        <input type="text" id="target" name="target" placeholder="1,1">
-        <button type="submit">Navigate</button>
-    </form>
-
+    <div class="container">
+        <div class="map-container">
+            <h2>Map</h2>
+            <img id="map-image" src="data:image/png;base64,{{ map_image }}" alt="Map">
+            <form id="navigate-form">
+                <label for="target">Enter target (x,y):</label>
+                <input type="text" id="target" name="target" placeholder="1,1">
+                <button type="submit"><i class="fas fa-route"></i> Navigate</button>
+            </form>
+        </div>
+        <div class="camera-container" style="background-color: #161b22; padding: 15px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <h2>Camera Feed</h2>
+            <div class="camera-box"><i class="fas fa-video-slash"></i> Unavailable</div>
+            
+            <!-- Battery Swap Progress and Voltage moved under Camera Feed -->
+            <div class="status-container" style="background-color: #161b22; padding: 15px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                <div>
+                    <h3>Battery Swap Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress" id="progress-bar">0%</div>
+                    </div>
+                </div>
+                <div>
+                    <h3>Voltage & Mile Range</h3>
+                    <p><i class="fas fa-bolt"></i> Voltage: <span id="voltage">12V</span></p>
+                    <p><i class="fas fa-road"></i> Mile Range: <span id="mile-range">3 miles</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="static/scripts.js"></script>
     <script>
         document.getElementById("navigate-form").addEventListener("submit", function(event) {
             event.preventDefault();
@@ -34,13 +61,29 @@
 
                 let images = data.map_images;
                 let index = 0;
+                let progressBar = document.getElementById("progress-bar");
 
                 function updateImage() {
                     if (index < images.length) {
                         document.getElementById("map-image").src = "data:image/png;base64," + images[index];
                         index++;
                         setTimeout(updateImage, 500);
+                    } else {
+                        startBatterySwap();
                     }
+                }
+
+                function startBatterySwap() {
+                    let progress = 0;
+                    let interval = setInterval(() => {
+                        if (progress >= 100) {
+                            clearInterval(interval);
+                        } else {
+                            progress += 10;
+                            progressBar.style.width = progress + "%";
+                            progressBar.textContent = progress + "%";
+                        }
+                    }, 500);
                 }
 
                 updateImage();

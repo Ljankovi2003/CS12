@@ -1,3 +1,4 @@
+# webapp.py
 from flask import Flask, render_template, jsonify, request
 from Dijkstra import create_graph, generate_map
 import networkx as nx
@@ -9,7 +10,7 @@ robot_position = (0, 0)
 
 @app.route('/')
 def index():
-    return render_template('index.html', map_image=generate_map(G, robot_position))
+    return render_template('index.html', map_image=generate_map(G, robot_position), camera_feed='static/unavailable.jpg')
 
 @app.route('/navigate', methods=['POST'])
 def navigate():
@@ -19,16 +20,13 @@ def navigate():
     if target in G.nodes:
         path = nx.shortest_path(G, source=robot_position, target=target, weight='weight')
 
-        # Show the full Dijkstra path first
         path_image = generate_map(G, robot_position, path, show_path_first=True)
 
-        # Simulate movement along the shortest path only
         images = [path_image]
         for pos in path:
             robot_position = pos
             images.append(generate_map(G, robot_position, path))
-            time.sleep(0.2)  # Shorter delay for smooth animation
-
+            time.sleep(0.2) 
         return jsonify({'map_images': images})
     else:
         return jsonify({'error': 'Invalid target node'}), 400
